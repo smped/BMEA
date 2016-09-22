@@ -18,7 +18,7 @@
 #' The units, parameters and time & date informastion are stored in this file.
 #' 
 #' @param batchData contains the results for a batch of genes after analysis with BMEA. 
-#' Must be the output from \code{\link{fitBmeaBatch}}}
+#' Must be the output from \code{\link{fitBmeaBatch}}
 #' @param paramToWrite the model parameters to write to disk. 
 #' Any non-model parameters will be ignored
 #' @param ... required for passing arguments from higher level functions

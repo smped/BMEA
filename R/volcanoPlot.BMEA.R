@@ -7,7 +7,7 @@
 #' and any requested points will be highlighted, up to the maximum specified by \code{hLight.n}
 #' 
 #' @param data the results from analysis with the BMEA model. 
-#' Can be an \code{\link{AffymetrixCelSetList}}, \code{array} or \code{matrix}}
+#' Can be an \code{\link{AffymetrixCelSetList}}, \code{array} or \code{matrix}
 #' @param plotVal determines which summary statistic to plot. 
 #' Defaults to mean, but can also accept median or any other saved summary statistic named in the array
 #' @param cont determines which contrast to plot. Equates to the the third dimension of any BmeaArray provided

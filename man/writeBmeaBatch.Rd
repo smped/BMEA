@@ -8,6 +8,9 @@ writeBmeaBatch(batchData, paramToWrite = c("c", "mu", "phi"), ...,
   nodePath = NULL, writeLog = TRUE, verbose = 0)
 }
 \arguments{
+\item{batchData}{contains the results for a batch of genes after analysis with BMEA. 
+Must be the output from \code{\link{fitBmeaBatch}}}
+
 \item{paramToWrite}{the model parameters to write to disk. 
 Any non-model parameters will be ignored}
 

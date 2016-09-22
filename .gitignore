@@ -1,3 +1,7 @@
+*.o
+src/*.o-*
+*.so
+*.dll
 .Rproj.user
 .Rhistory
 .RData

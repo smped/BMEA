@@ -9,6 +9,9 @@ volcanoPlot.BMEA(data, plotVal = "mean", cont = 1, hLight = NULL,
   hLight.n = 10, pch = 16, cex = 0.35, main, ...)
 }
 \arguments{
+\item{data}{the results from analysis with the BMEA model. 
+Can be an \code{\link{AffymetrixCelSetList}}, \code{array} or \code{matrix}}
+
 \item{plotVal}{determines which summary statistic to plot. 
 Defaults to mean, but can also accept median or any other saved summary statistic named in the array}
 
