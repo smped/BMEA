@@ -1,0 +1,23 @@
+Package: BMEA
+Title: Bayesian Modelling for Exon Arrays
+Version: 0.0.1
+Date: 2012-01-04
+Author: Steve Pederson <stephen.pederson@adelaide.edu.au>
+Maintainer: Steve Pederson <stephen.pederson@adelaide.edu.au>
+Depends:
+    aroma.affymetrix,
+    abind,
+    affy,
+    R.utils
+Suggests:
+    limma,
+    coda,
+    snow
+Description: Designed to operate on the aroma.affymetrix framework. Builds on
+    the probe-level modelling approaches for 3' Affymetrix Arrays, and incorporates
+    a term for the proportion of exons present in a cellType. Uses a Bayesian (MCMC)
+    approach.
+License: GPL (>=2)
+LazyLoad: yes
+Packaged: 2012-11-26 04:52:07 UTC; user
+RoxygenNote: 5.0.1
