@@ -22,6 +22,8 @@
 #' \emph{General Methods for Monitoring Convergence of Iterative Simulations} 
 #' Journal of Computational and Graphical Statistics, Vol. 7, No. 4 (Dec), pp. 434-455  
 #' 
+#' @useDynLib BMEA summariseMCMC
+#' 
 #' @export 
 summariseChains <- function(data, transform=TRUE) {
     # data must be the output from a BMEA run, with class BMEA.MCMC

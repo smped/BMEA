@@ -14,7 +14,7 @@
 #include<Rmath.h>
 
 
-SEXP getPhiLogFC(SEXP phi, SEXP contrasts, SEXP exonNames, SEXP includeSims) {
+SEXP getPhiLogFC_C(SEXP phi, SEXP contrasts, SEXP exonNames, SEXP includeSims) {
 
     // 'phi' is the matrix of sims for phi. nRows = sims, nCols = H x J
     // 'contrasts' is the matrix of contrasts

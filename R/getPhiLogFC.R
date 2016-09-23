@@ -26,6 +26,8 @@
 #' \item{sims}{ a list with a separate component for each contrast. Each contrast-level component is a matrix of the sampled posterior disitributions for each contrast. Rows represent a kept iteration from the MCMC process, and columns represent each exon. Returns NULL if keepSims is set to FALSE.}
 #' }
 #' 
+#' @useDynLib BMEA getPhiLogFC_C
+#' 
 #' @export
 getPhiLogFC <- function(data, contr.matrix, exonNames=NULL, keepSims=FALSE) {
     # A wrapper to the C function
@@ -48,7 +50,7 @@ getPhiLogFC <- function(data, contr.matrix, exonNames=NULL, keepSims=FALSE) {
     }
 
     # Get the data as required
-    out <- .Call("getPhiLogFC", phi, contr.matrix, exonNames, keepSims, PACKAGE="BMEA")
+    out <- .Call("getPhiLogFC_C", phi, contr.matrix, exonNames, keepSims, PACKAGE="BMEA")
 
     out
 

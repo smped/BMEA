@@ -41,6 +41,10 @@
 #' The names for the first dimension are vital for downstream analysis &  
 #' will specify which parameters are mu & phi.
 #' 
+#' @useDynLib BMEA runSingleExonUniformMCMC
+#' @useDynLib BMEA runUniformMCMC
+#' @useDynLib BMEA runUniformMCMCnoProbe
+#' 
 #' @export
 runMCMC.BMEA <- function(PM, conditions, exons, lambda, delta, mcmcParam=NULL, model="Full",...) {
 

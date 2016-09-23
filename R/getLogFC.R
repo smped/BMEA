@@ -30,6 +30,8 @@
 #' Returns NULL if keepSims is set to FALSE}
 #' }
 #' 
+#' @useDynLib BMEA getLogFC_C
+#' 
 #' @export
 getLogFC <- function(data, contr.matrix, keepSims=FALSE) {
     # A wrapper to the C function
@@ -42,7 +44,7 @@ getLogFC <- function(data, contr.matrix, keepSims=FALSE) {
 
     if (nrow(contr.matrix)!=length(mu.ind)) return(cat("The specified contrasts do not match the number of parameters for mu.\n"))
 
-    out <- .Call("getLogFC", mu, contr.matrix, keepSims, PACKAGE="BMEA")
+    out <- .Call("getLogFC_C", mu, contr.matrix, keepSims, PACKAGE="BMEA")
 
     out
 

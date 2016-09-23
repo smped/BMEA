@@ -14,7 +14,7 @@
 #include<Rmath.h>
 
 
-SEXP getLogFC(SEXP mu, SEXP contrasts, SEXP includeSims) {
+SEXP getLogFC_C(SEXP mu, SEXP contrasts, SEXP includeSims) {
 
     // mu is the matrix of sims for mu. nRows = sims, nCols = H
     // contrasts is the matrix of contrasts
