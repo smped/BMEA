@@ -7,6 +7,26 @@
 fitBmea.Snow(celSet, bgCelSet, cl, units = NULL, batchSize = NULL,
   conditions, contMatrix, ..., nodePaths = NULL)
 }
+\arguments{
+\item{celSet}{the celSet which is being processed}
+
+\item{bgCelSet}{a list with components \code{lambda} & \code{delta}. 
+Each component must be a celSet containing the information for the background signal priors}
+
+\item{cl}{A cluster as formed by \code{makeCluster} or similar from the package \code{snow}}
+
+\item{units}{the units to be processed}
+
+\item{batchSize}{the number of units to process before writing to disk. Defaults to 16 (2^4)}
+
+\item{conditions}{a vector of factors}
+
+\item{contMatrix}{the contrasts}
+
+\item{...}{used for passing arguments to \code{fitBmeaBatch}, \code{writeBmeaBatch} & \code{runMCMC.BMEA}}
+
+\item{nodePaths}{Where each node in the cluster will write it's output}
+}
 \value{
 Returns a list object with the elements:
 \itemize{

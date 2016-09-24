@@ -2,6 +2,17 @@
 #' 
 #' @description Enables genes to be fit in parallel, utilising the architecture of the snow package
 #' 
+#' @param celSet the celSet which is being processed
+#' @param bgCelSet a list with components \code{lambda} & \code{delta}. 
+#' Each component must be a celSet containing the information for the background signal priors
+#' @param cl A cluster as formed by \code{makeCluster} or similar from the package \code{snow}
+#' @param units the units to be processed
+#' @param batchSize the number of units to process before writing to disk. Defaults to 16 (2^4)
+#' @param conditions a vector of factors
+#' @param contMatrix the contrasts
+#' @param ... used for passing arguments to \code{fitBmeaBatch}, \code{writeBmeaBatch} & \code{runMCMC.BMEA}
+#' @param nodePaths Where each node in the cluster will write it's output
+#' 
 #' @details This process will split the supplied units into vectors of equal length, 
 #' with one for each node in the supplied cluster. 
 #' The BMEA process will be fit in series for the vector of units on each parallel node. 
@@ -183,36 +194,36 @@ fitBmea.Snow <- function(celSet, bgCelSet, cl, units=NULL, batchSize=NULL, condi
     bmeaTemp.paramToWrite <<- paramToWrite
 
     # Export the objects to workspaces in each node
-    clusterEvalQ(cl, library(BMEA))
-    clusterExport(cl, list("bmeaTemp.celSet", "bmeaTemp.bgCelSet", "bmeaTemp.conditions", "bmeaTemp.contMatrix", "bmeaTemp.batchSize", "bmeaTemp.nodeUnits", "bmeaTemp.nodePaths", "bmeaTemp.mcmcParam", "bmeaTemp.paramToSave", "bmeaTemp.keepSims", "bmeaTemp.zGene", "bmeaTemp.zExon", "bmeaTemp.paramToWrite"))
+    snow::clusterEvalQ(cl, library(BMEA))
+    snow::clusterExport(cl, list("bmeaTemp.celSet", "bmeaTemp.bgCelSet", "bmeaTemp.conditions", "bmeaTemp.contMatrix", "bmeaTemp.batchSize", "bmeaTemp.nodeUnits", "bmeaTemp.nodePaths", "bmeaTemp.mcmcParam", "bmeaTemp.paramToSave", "bmeaTemp.keepSims", "bmeaTemp.zGene", "bmeaTemp.zExon", "bmeaTemp.paramToWrite"))
 
     # Rename the objects on each node
-    clusterEvalQ(cl, celSet <- bmeaTemp.celSet)
-    clusterEvalQ(cl, bgCelSet <- bmeaTemp.bgCelSet)
-    clusterEvalQ(cl, conditions <- bmeaTemp.conditions)
-    clusterEvalQ(cl, contMatrix <- bmeaTemp.contMatrix)
-    clusterEvalQ(cl, batchSize <- bmeaTemp.batchSize)
-    clusterEvalQ(cl, mcmcParam <- bmeaTemp.mcmcParam)
-    clusterEvalQ(cl, paramToSave <- bmeaTemp.paramToSave)
-    clusterEvalQ(cl, keepSims <- bmeaTemp.keepSims)
-    clusterEvalQ(cl, zGene <- bmeaTemp.zGene)
-    clusterEvalQ(cl, zExon <- bmeaTemp.zExon)
-    clusterEvalQ(cl, paramToWrite <- bmeaTemp.paramToWrite)
+    snow::clusterEvalQ(cl, celSet <- bmeaTemp.celSet)
+    snow::clusterEvalQ(cl, bgCelSet <- bmeaTemp.bgCelSet)
+    snow::clusterEvalQ(cl, conditions <- bmeaTemp.conditions)
+    snow::clusterEvalQ(cl, contMatrix <- bmeaTemp.contMatrix)
+    snow::clusterEvalQ(cl, batchSize <- bmeaTemp.batchSize)
+    snow::clusterEvalQ(cl, mcmcParam <- bmeaTemp.mcmcParam)
+    snow::clusterEvalQ(cl, paramToSave <- bmeaTemp.paramToSave)
+    snow::clusterEvalQ(cl, keepSims <- bmeaTemp.keepSims)
+    snow::clusterEvalQ(cl, zGene <- bmeaTemp.zGene)
+    snow::clusterEvalQ(cl, zExon <- bmeaTemp.zExon)
+    snow::clusterEvalQ(cl, paramToWrite <- bmeaTemp.paramToWrite)
     # Do the node specific objects:
     for (i in 1:nNodes){
         i <<- i
-        clusterExport(cl, "i")
-        clusterEvalQ(cl[i], units <- bmeaTemp.nodeUnits[[i]]) # Send the units
-        clusterEvalQ(cl[i], nodePath <- bmeaTemp.nodePaths[[i]]) # Send the nodePaths
+        snow::clusterExport(cl, "i")
+        snow::clusterEvalQ(cl[i], units <- bmeaTemp.nodeUnits[[i]]) # Send the units
+        snow::clusterEvalQ(cl[i], nodePath <- bmeaTemp.nodePaths[[i]]) # Send the nodePaths
     }
 
     # Remove the superfluous objects from each node
-    clusterEvalQ(cl[1:nNodes], rm(list=ls(pattern="bmeaTemp")))
+    snow::clusterEvalQ(cl[1:nNodes], rm(list=ls(pattern="bmeaTemp")))
     # Remove the tempBmea objects from the global environment
     rm(list=ls(pattern="bmeaTemp", envir=.GlobalEnv), envir = .GlobalEnv)
 
     # Split every cluster level variable using clusterSplit & then run clusterApply.
-    out <- clusterEvalQ(cl, fitBmea(celSet=celSet, bgCelSet=bgCelSet, units=units, batchSize=batchSize, conditions=conditions, contMatrix=contMatrix, mcmcParam=mcmcParam, paramToSave=paramToSave, keepSims=keepSims, zGene=zGene, zExon=zExon, paramToWrite=paramToWrite, nodePath=nodePath))
+    out <- snow::clusterEvalQ(cl, fitBmea(celSet=celSet, bgCelSet=bgCelSet, units=units, batchSize=batchSize, conditions=conditions, contMatrix=contMatrix, mcmcParam=mcmcParam, paramToSave=paramToSave, keepSims=keepSims, zGene=zGene, zExon=zExon, paramToWrite=paramToWrite, nodePath=nodePath))
 
     # Format the output:
     units <- vector("list", nNodes)
