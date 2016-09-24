@@ -55,7 +55,7 @@ assignBgPriors <- function(celSet, seqFile, bgBins=NULL, bgParam=NULL, method="M
     if(class(celSet)[1]!="AffymetrixCelSet") stop("Incorrect data format: The input must be of Class: AffymetrixCelSet\n")
     # Get the celSet info
     celPath <- file.path(getwd(), getPath(celSet)) # Where the celFiles are
-    celNames <- getNames(celSet) # The names of the files in the celSet
+    celNames <- getNames.GenericDataFileSet(celSet) # The names of the files in the celSet
     nChips <- nbrOfArrays(celSet)
     parentName <- getParentName(celSet)
     chipType <- getChipType(celSet)
@@ -211,8 +211,8 @@ assignBgPriors <- function(celSet, seqFile, bgBins=NULL, bgParam=NULL, method="M
     seqCol <- grep("sequence", seqFileCols) # The column with the sequence data
     if (length(seqCol)!=1) stop(sprintf("Unable to locate the sequence data in %s\n",seqFile))
     seqData <- read.table(seqFile, header=TRUE, sep="\t", stringsAsFactors=FALSE)
-    cdfRows <- nbrOfRows(cdf)
-    seqCells <- xy2indices(as.integer(seqData[,xCol]), as.integer(seqData[,yCol]), nr=cdfRows)
+    cdfCols <- nbrOfColumns(cdf)
+    seqCells <- xy2indices(as.integer(seqData[,xCol]), as.integer(seqData[,yCol]), nc=cdfCols)
     seqData <- data.frame(seqCells, seqData[,seqCol], stringsAsFactors=FALSE)
     colnames(seqData) <- c("Probe ID","probe sequence")
     message("done\n")

@@ -69,7 +69,8 @@ mergeNodes <- function(celSet, nodePaths, outDir=NULL, ..., paramToWrite=NULL, n
     nUnits <- nbrOfUnits(cdf) # The number of units on the cdf
     cdfPath <- getPath(cdf) # The directory where the cdf is
     cdfType <- getName(cdf) # The original chipType without any further tags
-    if (file.exists(file.path(cdfPath, paste(chipType,"monocell.cdf",sep=",")))) { # Of course this should exist as it has been used to write the files on each node
+    if (any(grepl(paste(chipType,"monocell.[Cc][Dd][Ff]",sep=","), 
+                  list.files(cdfPath)))) { # Of course this should exist as it has been used to write the files on each node
         monoCdf <- AffymetrixCdfFile$byChipType(paste(chipType,",monocell",sep=""))
     }
     else {
