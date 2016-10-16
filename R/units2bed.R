@@ -37,8 +37,10 @@
 #' @seealso 
 #' \code{\link{AffymetrixCelFile}}, \code{\link{AffymetrixCdfFile}} 
 #' 
+#' @import aroma.affymetrix
+#' 
 #' @export 
-units2bed <- function(cdf, units, scoreCel=NULL, thresh=7.3, singleBed=TRUE, upCol="green", downCol="red", ucscTracks=c("ensGene", "knownAlt", "refGene"), ...) {
+units2bed <- function(cdf, units, scoreCel=NULL, thresh=8, singleBed=TRUE, upCol="green", downCol="red", ucscTracks=c("ensGene", "knownAlt", "refGene"), ...) {
 
     # Check the cdf
     if (length(grep("AffymetrixCdfFile",class(cdf)))==0) return(cat("The supplied cdf is incorrect. See help(\"AffymetrixCdfFile\")\n"))
@@ -94,7 +96,7 @@ units2bed <- function(cdf, units, scoreCel=NULL, thresh=7.3, singleBed=TRUE, upC
         if (getFullName(scoreCdf) != paste(getFullName(cdf), "monocell", sep=",")) return(cat("The 'scoreCel' file must be the same chipType as the cdf\n"))
         itemRgb <- "On" # Turn on the colouring if the scores check out
         # The score must be in a monocell cdf
-        monoCdf <- getMonoCell(cdf)
+        monoCdf <- aroma.affymetrix::getMonocellCdf(cdf)
         ugcMap <- getUnitGroupCellMap(monoCdf, units, retNames=TRUE)
         scores <- as.vector(log(extractMatrix(scoreCel, ugcMap$cell)))
         # Scale the scores to between 0 & 1

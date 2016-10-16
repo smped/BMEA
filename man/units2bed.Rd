@@ -4,7 +4,7 @@
 \alias{units2bed}
 \title{Export a BED file(s) for a given set of units}
 \usage{
-units2bed(cdf, units, scoreCel = NULL, thresh = 7.3, singleBed = TRUE,
+units2bed(cdf, units, scoreCel = NULL, thresh = 8, singleBed = TRUE,
   upCol = "green", downCol = "red", ucscTracks = c("ensGene", "knownAlt",
   "refGene"), ...)
 }
