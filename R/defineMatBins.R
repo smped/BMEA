@@ -33,8 +33,6 @@
 #' 
 #' @seealso \code{\link{fitBackgroundParameters}}
 #' 
-#' @import matrixStats
-#' 
 #' @export
 defineMatBins <- function(bgParam, nBins=20, fitIndividual=TRUE) {
 

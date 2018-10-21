@@ -10,9 +10,9 @@ package: BMEA
 output:
   BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{BMEA Usage Guide}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{BMEA Usage Guide}
 references:
   - id: Kapur2007
     title: Exon arrays provide accurate assessments of gene expression
