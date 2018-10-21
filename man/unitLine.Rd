@@ -27,4 +27,3 @@ unitLine()
 \seealso{
 \code{\link{abline}}
 }
-

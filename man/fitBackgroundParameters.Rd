@@ -4,8 +4,8 @@
 \alias{fitBackgroundParameters}
 \title{Estimate the parameters for the Background Signal.}
 \usage{
-fitBackgroundParameters(celSet, cdf = NULL, bgProbes = "r2.genomic.bgp",
-  method = "MAT")
+fitBackgroundParameters(celSet, cdf = NULL,
+  bgProbes = "r2.genomic.bgp", method = "MAT")
 }
 \arguments{
 \item{celSet}{the set of .CEL files being analysed as an \code{AffymetrixCelSet}}
@@ -59,4 +59,3 @@ Johnson, W.E., Li, W., Meyer, C.A., Gottardo, R., Carroll, J.S.,Brown, M., Liu, 
 \emph{Model-based analysis of tiling-arrays for ChIP-chip.}
 Proc Natl Acad Sci USA 103:12457-12462
 }
-

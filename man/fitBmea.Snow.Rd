@@ -75,4 +75,3 @@ After the process has been run, the saved data for the sets of parallel units ca
 \code{\link{mergeNodes}}, \code{\link{AffymetrixCelSet}}, 
  \code{\link{AffymetrixCelSetList}}, \code{\link{makeCluster}}
 }
-

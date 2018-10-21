@@ -5,8 +5,8 @@
 \title{Export a BED file(s) for a given set of units}
 \usage{
 units2bed(cdf, units, scoreCel = NULL, thresh = 8, singleBed = TRUE,
-  upCol = "green", downCol = "red", ucscTracks = c("ensGene", "knownAlt",
-  "refGene"), ...)
+  upCol = "green", downCol = "red", ucscTracks = c("ensGene",
+  "knownAlt", "refGene"), ...)
 }
 \arguments{
 \item{cdf}{an \code{AffymetrixCdfFile}}
@@ -53,4 +53,3 @@ The name of this file must end with "mapping.txt" and must also contain the full
 \seealso{
 \code{\link{AffymetrixCelFile}}, \code{\link{AffymetrixCdfFile}}
 }
-

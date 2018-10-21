@@ -32,4 +32,3 @@ Brooks, S.P. and Gelman, A. (1998)
 \emph{General Methods for Monitoring Convergence of Iterative Simulations} 
 Journal of Computational and Graphical Statistics, Vol. 7, No. 4 (Dec), pp. 434-455
 }
-

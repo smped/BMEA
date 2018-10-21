@@ -4,8 +4,8 @@
 \alias{extractBmeaArray}
 \title{Extract the data from an AffymetrixCelSetList as an array or matrix}
 \usage{
-extractBmeaArray(celSetList, units = NULL, which = NULL, firstOnly = TRUE,
-  log = TRUE)
+extractBmeaArray(celSetList, units = NULL, which = NULL,
+  firstOnly = TRUE, log = TRUE)
 }
 \arguments{
 \item{celSetList}{an object of class \code{\link{AffymetrixCelSetList}}}
@@ -32,4 +32,3 @@ Extract the data saved to an AffymetrixCelSetList for a given set of units
 During the BMEA process, contrast, model parameters & background priors are all saved as AffymetrixCel Files. 
 This enables simple extraction of saved data for any combination of units & files.
 }
-

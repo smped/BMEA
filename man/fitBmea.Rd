@@ -41,4 +41,3 @@ so a wise choice for \code{batchSize} can impact on the speed of the process.
 \seealso{
 \code{\link{fitBmeaBatch}}, \code{\link{writeBmeaBatch}}, \code{\link{runMCMC.BMEA}}
 }
-

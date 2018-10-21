@@ -57,4 +57,3 @@ H. Bengtsson, K. Simpson, J. Bullard, and K. Hansen, (2008) \emph{aroma.affymetr
  Johnson, W.E., Li, W., Meyer, C.A., Gottardo, R., Carroll, J.S., Brown, M., Liu, X.S. (2006) \emph{Model-based analysis of tiling-arrays for ChIP-chip.} 
  Proc Natl Acad Sci USA 103:12457-12462
 }
-

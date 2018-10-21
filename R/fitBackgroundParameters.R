@@ -48,7 +48,6 @@
 #' Proc Natl Acad Sci USA 103:12457-12462
 #' 
 #' @import aroma.affymetrix
-#' @import affy
 #' 
 #' @export
 fitBackgroundParameters <- function(celSet, cdf=NULL, bgProbes="r2.genomic.bgp", method="MAT") {

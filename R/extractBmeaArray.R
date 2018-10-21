@@ -17,7 +17,6 @@
 #' 
 #' @return Returns either a matrix or array, depending on which data is requested
 #' 
-#' @import abind
 #' @import aroma.affymetrix
 #' 
 #' @export
@@ -93,7 +92,7 @@ extractBmeaArray <- function(celSetList, units=NULL, which=NULL, firstOnly=TRUE,
     # Now extract the data
     if (length(which)>1) {
         out <- lapply(celSetList[which], extractMatrix, cells=cells)
-        out <- abind(out, along=3)
+        out <- abind::abind(out, along=3)
         dimnames(out) <- list(rowNames,colNames,listNames[which])
     }
     else {

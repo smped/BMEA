@@ -39,4 +39,3 @@ as the default.
 
 All data is retrieved using C and this function is a simple wrapper to the C function.
 }
-

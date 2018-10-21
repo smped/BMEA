@@ -51,4 +51,3 @@ the dataset to those with a high signal-to-noise ratio.
 The value of \code{zExon} can also be set to \code{NULL} to bypass the filtering of exons which 
 are not confidently detectable above background.
 }
-

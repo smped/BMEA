@@ -45,4 +45,3 @@ Kapur, K., Xing, Y., Ouyang, Z., Wong, WH. (2007) \emph{Exon arrays provide accu
 \seealso{
 \code{\link{fitBackgroundParameters}}
 }
-

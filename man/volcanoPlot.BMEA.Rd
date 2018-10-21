@@ -46,4 +46,3 @@ and any requested points will be highlighted, up to the maximum specified by \co
 \seealso{
 \code{\link{extractBmeaArray}}
 }
-

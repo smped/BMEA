@@ -51,4 +51,3 @@ The units, parameters and time & date informastion are stored in this file.
 \seealso{
 \code{\link{fitBmeaBatch}}
 }
-

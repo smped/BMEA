@@ -87,4 +87,3 @@ Groups with B-statistics less than this value, but above the specified value for
 \seealso{
 \code{\link{AffymetrixCelSetList}}, \code{\link{AffymetrixCdfFile}}, \code{\link{boxplot}}
 }
-

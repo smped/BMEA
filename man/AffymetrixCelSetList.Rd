@@ -37,4 +37,3 @@ The cdf will be assigned automatically,
 i.e. BG lists will use the same as the celSet, 
 contrasts will use the monocell CDF & model parameters will use the full (S & p) or monocell (sigmaS, c, mu, sigmaMu, sigmaP, phi) respectively
 }
-

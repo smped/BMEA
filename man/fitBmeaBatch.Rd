@@ -73,4 +73,3 @@ is generally not advised to be saved unless it is of specific interest.
 \seealso{
 \code{\link{fitBmeaSingle}}, \code{\link{writeBmeaBatch}}
 }
-

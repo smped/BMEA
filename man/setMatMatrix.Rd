@@ -51,4 +51,3 @@ Kapur, K., Xing, Y., Ouyang, Z., Wong, WH. (2007)
   \emph{ Model-based analysis of tiling-arrays for ChIP-chip.}
   Proc Natl Acad Sci USA 103:12457-12462
 }
-

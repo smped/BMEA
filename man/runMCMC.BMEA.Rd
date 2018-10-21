@@ -57,4 +57,3 @@ It should be noted that the process for a single gene can take in the order of m
 
 The MCMC process itself is wrtten in C and this function is a wrapper to this function.
 }
-

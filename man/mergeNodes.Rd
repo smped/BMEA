@@ -56,4 +56,3 @@ CEL files with model parameters will be written to the directories \code{bmeaDat
 \seealso{
 \code{\link{AffymetrixCelSet}}
 }
-

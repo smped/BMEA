@@ -4,10 +4,11 @@
 \alias{createCelHeader}
 \title{Create a CEL header from the supplied inputs}
 \usage{
-createCelHeader(filename = NULL, cdf = NULL, version = 4, cols = NULL,
-  rows = NULL, algorithm = "Percentile", parameters = NULL,
-  chiptype = NULL, header = NULL, datheader = NULL, librarypackage = "",
-  cellmargin = 4, noutliers = 0, nmasked = 0, tags = NULL)
+createCelHeader(filename = NULL, cdf = NULL, version = 4,
+  cols = NULL, rows = NULL, algorithm = "Percentile",
+  parameters = NULL, chiptype = NULL, header = NULL,
+  datheader = NULL, librarypackage = "", cellmargin = 4,
+  noutliers = 0, nmasked = 0, tags = NULL)
 }
 \arguments{
 \item{filename}{the name of the CEL file that the header will be written to}
@@ -79,4 +80,3 @@ If a cdf is specified, any values for \code{cols}, \code{rows} or \code{chiptype
 \seealso{
 \code{\link{createCel}} \code{\link{AffymetrixCdfFile}}
 }
-

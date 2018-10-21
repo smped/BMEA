@@ -18,4 +18,3 @@ Counts the number of G & C bases in a character vector of sequences
 \details{
 Counts the number of G & C bases in a batch of a sequences
 }
-

@@ -4,8 +4,8 @@
 \alias{defineGcBins}
 \title{Estimate the mean and standard deviation for the log background signal}
 \usage{
-defineGcBins(celSet, cdf = NULL, bgProbes = "r2.genomic.bgp", nBins = 20,
-  fitIndividual = TRUE)
+defineGcBins(celSet, cdf = NULL, bgProbes = "r2.genomic.bgp",
+  nBins = 20, fitIndividual = TRUE)
 }
 \arguments{
 \item{celSet}{the set of arrays being processed, as an \code{AffymetrixCelSet}.}
@@ -38,4 +38,3 @@ estimate the background mean and standard deviation for a given GC count.
 \details{
 This function finds the log scale mean (lambda) and standard deviation (delta) of the specified \code{bgProbes} for each \code{gc_count}.
 }
-

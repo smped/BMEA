@@ -50,4 +50,3 @@ z <- zScore(PM, lambda, delta, exons) # The zScore
 z
 
 }
-

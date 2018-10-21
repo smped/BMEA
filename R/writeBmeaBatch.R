@@ -167,7 +167,7 @@ writeBmeaBatch <- function(batchData, paramToWrite=c("c","mu","phi"), ..., nodeP
         nS <- table(ugcMap$unit) # The number of units
         for (i in 1:length(units)) {
             rows <- 1:(nS[i]*nChips) # S will always be the first rows if it has been saved!
-            S <- abind(S, array(batchData$summaries[[i]][rows,1:8],dim=c(nS[i],nChips,8)),along=1)
+            S <- abind::abind(S, array(batchData$summaries[[i]][rows,1:8],dim=c(nS[i],nChips,8)),along=1)
         }
         dimnames(S) <- list(ugcMap$cell,celNames,savedStats)
 
@@ -265,7 +265,7 @@ writeBmeaBatch <- function(batchData, paramToWrite=c("c","mu","phi"), ..., nodeP
         c <- c()
         for (i in 1:length(units)) {
             rows <- grep("c",rownames(batchData$summaries[[i]]))
-            c <- abind(c, array(batchData$summaries[[i]][rows,1:8],dim=c(1,nChips,8)),along=1)
+            c <- abind::abind(c, array(batchData$summaries[[i]][rows,1:8],dim=c(1,nChips,8)),along=1)
         }
         dimnames(c) <- list(batchData$units$unitNames,celNames,savedStats)
 
@@ -320,7 +320,7 @@ writeBmeaBatch <- function(batchData, paramToWrite=c("c","mu","phi"), ..., nodeP
         mu <- c()
         for (i in 1:length(units)) {
             rows <- grep("mu",rownames(batchData$summaries[[i]]))[1:nMu] # If sigma_mu is saved, this needs to be removed here
-            mu <- abind(mu, array(batchData$summaries[[i]][rows,1:8],dim=c(1,nMu,8)),along=1)
+            mu <- abind::abind(mu, array(batchData$summaries[[i]][rows,1:8],dim=c(1,nMu,8)),along=1)
         }
         dimnames(mu) <- list(batchData$units$unitNames,levels(conditions),savedStats)
 
@@ -508,7 +508,7 @@ writeBmeaBatch <- function(batchData, paramToWrite=c("c","mu","phi"), ..., nodeP
         for (i in 1:length(units)) {
             rows <- grep("phi",rownames(batchData$summaries[[i]]))
             nJ <- length(rows)/nH
-            phi <- abind(phi, array(batchData$summaries[[i]][rows,1:8],dim=c(nJ,nH,8)),along=1)
+            phi <- abind::abind(phi, array(batchData$summaries[[i]][rows,1:8],dim=c(nJ,nH,8)),along=1)
         }
         dimnames(phi) <- list(monoUgcMap$group,levels(conditions),savedStats)
 

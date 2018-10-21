@@ -18,4 +18,3 @@ this function removes all the node-specific files
 NB: This must only be run after the nodes have been successfully merged,
 as all information saved in the node folders will be deleted permanently
 }
-

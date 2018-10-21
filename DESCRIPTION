@@ -5,7 +5,8 @@ Date: 2012-01-04
 Author: Steve Pederson <stephen.pederson@adelaide.edu.au>
 Maintainer: Steve Pederson <stephen.pederson@adelaide.edu.au>
 Depends:
-    aroma.affymetrix,
+    aroma.affymetrix
+Imports:
     abind,
     affy,
     R.utils
@@ -20,4 +21,4 @@ Description: Designed to operate on the aroma.affymetrix framework. Builds on
 License: GPL (>=2)
 LazyLoad: yes
 Packaged: 2012-11-26 04:52:07 UTC; user
-RoxygenNote: 5.0.1
+RoxygenNote: 6.1.0

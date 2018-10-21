@@ -24,4 +24,3 @@ Check the class & structure of BMEA objects. Generally for internal usage
 \details{
 If an object is required for downstream analysis, this functions check the class attribute & the structure of the object to ensure forward compatability.
 }
-
