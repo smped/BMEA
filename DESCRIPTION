@@ -20,5 +20,6 @@ Description: Designed to operate on the aroma.affymetrix framework. Builds on
     approach.
 License: GPL (>=2)
 LazyLoad: yes
+Encoding: UTF-8
 Packaged: 2012-11-26 04:52:07 UTC; user
 RoxygenNote: 6.1.0
