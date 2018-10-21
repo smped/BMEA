@@ -1,0 +1,623 @@
+---
+title: "BMEA Usage Guide"
+author:
+- name: Steve Pederson
+  affiliation:
+  - Bioinformatics Hub, University of Adelaide
+  - Dept Paediatrics, Faculty of Health Sciences, University of Adelaide
+  email: stephen.pederson@adelaide.edu.au
+package: BMEA
+output:
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{BMEA Usage Guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+references:
+  - id: Kapur2007
+    title: Exon arrays provide accurate assessments of gene expression
+    author: 
+    - family: Kapur
+      given: Karen
+    - family: Xing
+      given: Yi
+    - family: Ouyang
+      given: Zhengqing
+    - family: Wong
+      given: Wing
+    container-title: Genome Biology
+    volume: 8
+    issue: 5
+    page: R82
+    type: article-journal
+    issued:
+      year: 2007
+---
+
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(message = FALSE,warning = FALSE)
+```
+
+```{r packagesForGenerationOfVignetteOnly, echo=FALSE}
+library(ggdag)
+library(pander)
+library(tidyverse)
+library(data.tree)
+```
+
+
+
+# Brief Introduction
+
+This package implements the Bayesian Modelling for Exon Arrays (BMEA) approach as a simple package, with MCMC sampling performed in C and genes analysed in parallel.
+Currently, all chains are initialised within the same computational node.
+
+## The BMEA model
+
+The BMEA model can be applied to any whole transcript array for which a CDF exists, in which an exon-level structure is defined.
+Under this model, an observed probe intensity for a given gene $PM_{hijk}$ is assumed to be an additive sum of background signal ($B_{hijk}$) and 'true' signal ($S_{hijk}$) such that
+
+$$
+PM_{hijk} = B_{hijk} + S_{hijk}
+$$
+
+where the treatment group ($h$), sample ($i$), exon ($j$) and probe ($k$) are all denoted by the appropriate subscript.
+
+The background component is assumed to be log-normally distributed $\log B_{hijk} \sim \mathcal{N}(\lambda_{hijk}, \delta_{hijk})$, where the values $\lambda_{hijk}$ and $\delta_{hijk}$ are dependent on probe sequence and are estimated in advance of gene-level analysis.
+
+The signal component is also assumed to be log-normally distributed $\log S_{hijk} \sim \mathcal{N}(\eta_{hijk}, \sigma_S)$ where $\sigma_S$ is the general variance term for all probes within a given gene.
+The mean ($\eta_{hijk}$) is the sum of the overall expression level $c_{hi}$, probe-level terms ($p_k$) and an exon-level term $\log \phi_{hj}$, where $\phi_{hj}$ is the proportion of transcripts containing exon $j$ in treatment group $h$.
+
+$$
+\eta_{hijk} = c_{hi} + p_k + \log \phi_{hj}
+$$
+
+This equation is based on the model
+
+$$
+S_{hijk} = \phi_{hj} e^{c_{hi} + p_k}
+$$
+
+where $\phi_{hj} = 1$ for constitutive exons, and $\phi_{hj} = 0$ for completely absent exons.
+
+```{r DAG, echo=FALSE, fig.height=6, fig.cap="Full BMEA model expressed as a DAG. All priors are as defined in this figure, with hyperparameters for background signal estimated from the observed data."}
+dagify(PM ~ B + S,
+       B ~ l,
+       B ~ d,
+       S ~ e,
+       S ~ s,
+       e ~ c,
+       e ~ p,
+       e ~ phi,
+       p ~ sp,
+       c ~ mu,
+       c ~ sm,
+       labels = c(PM = "PM[hijk]",
+                  B = "B[hijk]",
+                  S = "S[hijk]",
+                  l = "lambda[il]",
+                  d = "delta[il]",
+                  e = "eta[hijk]",
+                  s = "sigma[S]",
+                  c = "c[hi]",
+                  p = "p[k]",
+                  phi = "phi[hj]",
+                  sp = "sigma[p]",
+                  mu = "mu[h]",
+                  sm = "sigma[mu]")
+       ) %>%
+  tidy_dagitty() %>%
+  mutate(x = case_when(
+    name == "PM" ~ 0,
+    name == "B" ~ -2,
+    name == "S" ~ 2,
+    name == "e" ~ -0.5,
+    name == "c" ~ -2.5,
+    name == "p" ~ -1,
+    name == "phi" ~ 0.5,
+    name == "mu" ~ -3.5,
+    name == "sm" ~ -2.5,
+    name == "sp" ~ -1,
+    name == "s" ~ 2,
+    name %in% c("d", "l") ~ -3.5
+  ),
+  xend = case_when(
+    to == "PM" ~ 0,
+    to == "B" ~ -2,
+    to == "S" ~ 2,
+    to == "e" ~ -0.5,
+    to == "c" ~ -2.5,
+    to == "p" ~ -1,
+    to == "phi" ~ 0.5,
+    to == "mu" ~ -3.5,
+    to == "sm" ~ -2.5,
+    to == "sp" ~ -1,
+    to == "s" ~ 2,
+    to %in% c("d", "l") ~ -3.5
+  ),
+  y = case_when(
+    name == "PM" ~ 1,
+    name %in% c("B", "S") ~ 2,
+    name == "e" ~ 3,
+    name %in% c("c", "p", "phi") ~ 4,
+    name %in% c("mu", "sm", "sp", "s") ~ 5.5,
+    name == "d" ~ 1.8,
+    name == "l" ~ 2.7
+  ),
+  yend = case_when(
+    to == "PM" ~ 1,
+    to %in% c("B", "S") ~ 2,
+    to == "e" ~ 3,
+    to %in% c("c", "p", "phi") ~ 4,
+    to %in% c("mu", "sm", "sp", "s") ~ 5.5,
+    to == "d" ~ 1.8,
+    to == "l" ~ 2.7
+  ),
+  shape = name %in% c("d", "l"),
+  label = paste0("italic(", label, ")")) %>% 
+  ggplot(aes(x, y, xend = xend, yend= yend)) +
+  geom_dag_edges() +
+  geom_dag_node(aes(shape = shape),
+                colour = "white", internal_colour = "black") +
+  geom_dag_text(aes(label = label), 
+                parse = TRUE, 
+                colour = "black",
+                size = 5,
+                family = "Times") +
+  geom_rect(aes(xmin = xmin, xmax = xmax, 
+                ymin = ymin, ymax = ymax),
+            data = data_frame(ymin = 0.5,
+                              ymax = 4.8,
+                              xmin = -3,
+                              xmax = 2.5), 
+            fill = rgb(1,1,1, 0),
+            colour = "black",
+            inherit.aes = FALSE) +
+  geom_text(aes(x, y, label = label),
+            data = data_frame(
+              label = c("italic(PM[hijk]) == italic(B[hijk] + S[hijk])",
+                        "log(italic(S[hijk])) %~%~N(italic(eta[hijk],sigma[S]))",
+                        "log(italic(B[hijk])) %~%~N(italic(lambda[il],delta[il]))",
+                        "italic(eta[hijk] == c[hi] + p[k] + log(phi[hj]))",
+                        "italic(phi[hj] %~%~U(0,1))",
+                        "italic(p[k] %~%~N(0, sigma[p]))",
+                        "italic(c[hi] %~%~N(mu[h], sigma[mu]))",
+                        "italic(sigma[S] %prop% sigma[S]^-1)",
+                        "italic(sigma[p] %~%~U(0, 10))",
+                        "italic(sigma[mu] %~%~U(0, 5))",
+                        "italic(mu[h] %~%~U(0, 2^16))")
+              ) %>%
+              mutate(x = 2.8,
+                     y = seq(0.5, by = 0.52, length.out = nrow(.))),
+            inherit.aes = FALSE, 
+            family = "Times",
+            parse = TRUE,
+            size = 5,
+            hjust = 0,
+            colour = "black") +
+  scale_shape_manual(values = c(21, 22)) +
+  scale_x_continuous(limits = c(-4, 5)) +
+  scale_y_continuous(limits = c(0.5, 7)) +
+  guides(shape = FALSE) +
+  theme_void()
+```
+
+
+## Background Signal Component
+
+The modified MAT model [@Kapur2007] is first fitted on the set of background probes to obtain estimates of all MAT model parameters, and fitted values for each BG probe.
+BG probes are then divided in $l = 1, 2, ..., L$ approximately equal bins (usually $L = 20$) based on fitted values.
+Means and standard deviations from each bin for each array are then used as bin-specific values $\lambda_{il}$ and $\delta_{il}$ respectively.
+
+The model is then applied to the probe sequences of all $PM$ probes to obtain a fitted value for each probe, and these are assigned to the appropriate bin, with values $\lambda_{il}$ and $\delta_{il}$ specified as the hyperparameters for the BG signal prior distributions.
+
+# Using the Package BMEA
+
+## Data Setup
+
+`BMEA` relies on the same package infrastructure as `aroma.affymetrix` and requires files to be in the same locations as specified by this package.
+The required layout is as follows
+
+```{r minimalPath, echo=FALSE, results='markup'}
+path <- c(
+    "parentDirectory/annotationData/chipTypes/chipType/chipType.cdf",
+    "parentDirectory/annotationData/chipTypes/chipType/chipType_bgProbes.bgp",
+    "parentDirectory/annotationData/chipTypes/chipType/chipType.probe_tab",
+    "parentDirectory/rawData/exptName/chipType/File1.CEL",
+    "parentDirectory/rawData/exptName/chipType/File2.CEL"
+)
+data.tree::as.Node(data.frame(pathString = path))
+```
+
+For analysis of data using `HuEx-1.0-st-v2` arrays, using both the Affymetrix CDF and a custom CDF, for an experiment called `myExpt` this may look like.
+Here we'll be using the antigenomic background probes for estimation of parameters.
+
+```{r myPath, echo=FALSE, results='markup'}
+path <- c(
+  "parentDirectory/annotationData/chipTypes/HuEx-1_0-st-v2/HuEx-1_0-st-v2.cdf",
+  "parentDirectory/annotationData/chipTypes/HuEx-1_0-st-v2/HuEx-1_0-st-v2.r2.antigenomic.bgp",
+  "parentDirectory/annotationData/chipTypes/HuEx-1_0-st-v2/HuEx-1_0-st-v2,Custom.cdf",
+  "parentDirectory/annotationData/chipTypes/HuEx-1_0-st-v2/HuEx-1_0-st-v2,Custom_probe_tab",
+  paste0("parentDirectory/rawData/myExpt/HuEx-1_0-st-v2/File", 1:8, ".CEL")
+)
+data.tree::as.Node(data.frame(pathString = path))
+```
+
+Once we have the data in the correct directory structure, we can load the package and define the required data objects.
+
+```{r}
+library(BMEA)
+library(limma)
+library(snow)
+library(magrittr)
+library(tidyverse)
+```
+
+Now we can define the two CDF files required for the analysis
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+
+```{r}
+chipType <- "HuEx-1_0-st-v2"
+affyCdf <- AffymetrixCdfFile$byChipType(chipType)
+myCdf <- AffymetrixCdfFile$byChipType(chipType, tags="Custom")
+```
+
+For our experiment `myExpt` we now define the experiment name, and organise the CEL files into an `AffymetrixCelSet` using the `aroma.affmetrix` infrastructure.
+
+```{r}
+exptName <- "myExpt"
+cs <- AffymetrixCelSet$byName(exptName, cdf=affyCdf)
+```
+
+## Pre-Processing
+
+Background correction is not required for BMEA as it is included in the model-fitting stage.
+Instead, the first required step will be to quantise normalise the data.
+First we define the process, then we perform the normalisation.
+This may take a little while.
+Note also, that this will quantile normalise the entire set of probes on the array, treating background and $PM$ probes equally.
+
+```{r qn}
+qn <- QuantileNormalization(cs)
+csN <- process(qn, verbose=verbose)
+```
+
+## Fit the MAT Background Model
+
+Now we have normalised the data, we can fit the MAT background model on our given set of background probes.
+As these probes may be missing from the custom CDF, we'll stay with the Affymetrix CDF for this step.
+
+```{r bgParam}
+bgParam <- fitBackgroundParameters(csN, cdf=affyCdf, bgProbes="r2.antigenomic.bgp", method="MAT")
+```
+
+MAT model parameters will be fitted using all arrays, and fitted values will be in the list element `bgParam$fitted`.
+Model coefficients will be in `bgParam$coef` whilst observed log intensities for each probe will be in `bgParam$observed`
+
+After fitting the model, we can estimate values for the prior for each bin, on each array.
+
+```{r}
+bgBins <- defineMatBins(bgParam)
+```
+
+We can check these values across the entire experiment
+
+```{r}
+c("lambda", "delta") %>% 
+  lapply(function(x){
+    set_rownames(bgBins[[x]], paste0("Bin", 1:nrow(bgBins[[x]]))) %>%
+      as.data.frame(stringsAsFactors = FALSE) %>%
+      rownames_to_column("Bin") %>% 
+      gather("Array", "Estimate", -Bin) %>% 
+      mutate(Parameter = paste0("hat(", x, ")[il]"), 
+             Bin = factor(Bin, levels = paste0("Bin", 1:nrow(.))))
+  }) %>% 
+  bind_rows() %>%
+  as_tibble() %>% 
+  ggplot(aes(Bin, Estimate)) + 
+  geom_boxplot() + 
+  facet_wrap(~Parameter, scales = "free", ncol = 1, labeller = label_parsed) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+```
+
+Now we can define a set of CEL files which contain the values $\lambda_{hijk}$ and $\delta_{hijk}$ based on which bin $l = 1, 2, ..., L$ that each probe belongs to.
+Before doing this, first we should set the CDF for the dataset as our custom CDF.
+
+```{r}
+setCdf(csN, myCdf)
+```
+
+Now we can use the probe sequences contained in our custom CDF to assign them to the appropriate bin for expected background signal.
+
+```{r}
+pmSequenceFile <- "HuEx-1_0-st-v2,Custom.probe_tab"
+bgCelSet <- assignBgPriors(csN,
+                           seqFile=pmSequenceFile,
+                           bgBins=bgBins,
+                           bgParam=bgParam, 
+                           overWrite=TRUE)
+```
+
+## Run the BMEA model
+
+First we need to define the treatment groups and the contrast matrix.
+Here we'll just assign half of our samples to each group.
+
+```{r contrasts}
+n <- length(csN)
+conditions <- rep(c("A", "B"), each = floor((n+1)/2))[seq_len(n)]
+conditions <- factor(conditions, levels = c("A", "B"))
+contrastMatrix <- makeContrasts(BVsA = B - A, levels = conditions) 
+```
+
+Now we set our MCMC parameters.
+
+```{r mcmcParam, eval=TRUE}
+mcmcParam <- list(nChains = 3L, nIter = 12000L, nBurnin = 6000L, nThin = 6L)
+```
+
+
+Each gene will now be fit using `r mcmcParam$nChains` independent chains, for `r mcmcParam$nIter` iterations, discarding the first `r mcmcParam$nBurnin` as the burnin period.
+Only one value in every `r mcmcParam$nThin` values will be saved during the MCMC process.
+
+We can also set the process to run on any specific units, which must be specified numerically.
+
+```{r units}
+units <- data_frame(unitID = getUnitNames(myCdf), unit = seq_along(unitID)) 
+```
+
+
+The process is implemented so it will run on parallel nodes defined by the package `snow`, so let's define 6 nodes, which can be run on a standard desktop with 4 multi-threaded cores.
+**Please note that this process can run for several days.**
+Testing 18 arrays on a workstation with 20 threads will complete in 24-36 hours.
+
+In the following, we'll fit 20 genes on each node for a total of 60 genes.
+
+```{r fitBmea.Snow}
+nCores <- 3
+fitUnits <- units$unit[seq_len(nCores*20)]
+cl <- makeCluster(nCores, type="SOCK")
+bmeaFit <- fitBmea.Snow(celSet = csN,
+                        bgCelSet = bgCelSet, 
+                        cl = cl, 
+                        units = fitUnits, 
+                        batchSize = 10, 
+                        conditions = conditions, 
+                        contMatrix = contrastMatrix, 
+                        paramToWrite = c("c", "mu", "phi"),
+                        mcmcParam = mcmcParam)
+stopCluster(cl)
+```
+
+
+## Obtaining the Final Results
+
+The above process will record the output from each node in a separate folder, which will then need to be merged into a single set of CEL files.
+The saved parameters will have the 2.5, 25, 50, 75, and 97.5th percentiles of the posterior distributions saved in separate CEL files, along with the posterior mean and sd.
+
+
+```{r mergeNodes}
+mergeNodes(celSet=csN, 
+           as.list(names(bmeaFit$units)), 
+           paramToWrite=c("c", "mu","phi"))
+```
+
+If you're happy with the merged results, you can easily delete the files from each individual node.
+
+```{r clearNodes}
+clearNodes(names(bmeaFit$units))
+```
+
+# Inspecting Results
+
+In order to inspect the results, we can define an `AffymetrixCelSetList` for our parameter of interest.
+Let's start with `logFC` which under BMEA will be defined as $\Delta \mu = \mu_B - \mu_A$ in keeping with the defined contrast matrix and the DAG in Figure \@ref(fig:DAG).
+
+
+## logFC
+
+```{r csLogFC}
+csLogFC <- AffymetrixCelSetList(csN, type="contrast", tags="logFC")
+```
+
+Once we have defined an `AffymetrixCelSetList`, we can use `extractBmeaArray()` to extract the values we need as an array.
+In the following, we'll extract the values required for a 95\% Central Posterior Interval, and a simple $B$ statistic which can be used for ranking results.
+Note that in the following, we're also converting logFC to the $\log_2$ scale.
+
+```{r bmeaLogFC}
+bmeaLogFC <- extractBmeaArray(csLogFC)[, c("2.5%", "mean", "97.5%", "B"),"BVsA"] %>%
+  as.data.frame() %>%
+  rownames_to_column("unitID") %>%
+  as_data_frame() %>%
+  mutate(mean = mean / log(2),
+         `2.5%` = `2.5%` / log(2),
+         `97.5%` = `97.5%` / log(2)) %>%
+  filter(is.finite(mean)) %>% # Get rid of genes not fitted
+  arrange(desc(abs(B))) 
+```
+
+From here you can simply inspect the list and decide which genes are DE given any filtering criteria you choose to apply.
+
+## Alternate Splicing
+
+In order to detect any potential alternate splicing events, we can also check the posterior distribution for $\Delta \log \phi$
+
+```{rcsPhiLogFC}
+csPhiLogFC <- AffymetrixCelSetList(csN, type="contrast", tags="phiLogFC")
+```
+
+Instead of checking all genes, the most highly expressed quartile was shown to be the most reliable for generating candidate AS events, as for these genes, the true signal far exceeds the background signal on the array itself.
+This leads to more high-confidence candidates.
+Here we'll just load in the posterior mean as a point estimate.
+
+```{r csMu}
+csMu <- AffymetrixCelSetList(csN, type="model", tags="mu")
+mu <- extractBmeaArray(csMu, units = fitUnits)[, "mean", c("A", "B")] %>%
+  as.data.frame() %>% 
+  rownames_to_column("unitID") %>% 
+  as_tibble() %>%
+  gather("Array", "Mu", -unitID)
+```
+
+Now we can find the top quartile.
+
+```{r muTopQ}
+muTopQ <- mu %>%
+  filter(Mu > 0) %>%
+  group_by(unitID) %>%
+  summarise(Mu_mean = mean(Mu)) %>%
+  filter(Mu_mean > quantile(Mu_mean, probs = 0.75)) %>%
+  left_join(units)
+```
+
+In addition, genes with minimal `logFC` are easier to assess via laboratory methods, and you like to filter your data to exclude genes with any detected fold-change.
+
+```{r logFCLowQ}
+logFCLowQ <- filter(bmeaLogFC,
+                    abs(mean) < quantile(abs(mean), probs = 0.25))
+```
+
+Now we can find the intersection of highly-expressed genes, with those for which there is minimal evidence of fold-change.
+
+```{r candUnits}
+candidateUnits <- intersect(logFCLowQ$unitID, muTopQ$unitID)
+```
+
+We can extract these units and inspect them for candidate exons.
+
+```{r phiLogFC}
+phiLogFC <- extractBmeaArray(csPhiLogFC, 
+                             units = candidateUnits, 
+                             firstOnly = FALSE) %>%
+  magrittr::extract(, c("2.5%", "50%", "97.5%", "B"),"BVsA") %>%
+  as.data.frame() %>%
+  rownames_to_column("groupID") %>%
+  as_data_frame() %>%
+  rename(median = `50%`) %>%
+  mutate(median = median / log(2),
+         `2.5%` = `2.5%` / log(2),
+         `97.5%` = `97.5%` / log(2)) 
+```
+
+```{r}
+phiLogFC %>%
+  separate(groupID, into = c("unitID", "groupID"), sep = "\\.") %>%
+  arrange(desc(abs(B)))
+```
+
+
+## Additional Filtering of Candidates
+
+In order to restrict results to the most high confidence set of candidates, choosing those with a highest $Z$-score as used during the DABG stages is also advisable.
+A viable approach would be to choose those with a $Z$-score in the highest quartile.
+In the following, we'll obtain $Z$-scores for the fitted units only
+
+```{r}
+fitUgc <- getUnitGroupCellMap(myCdf, units = fitUnits, retNames = TRUE)
+fitPM <- getIntensities(csN, indices = fitUgc$cell) %>%
+  set_colnames(celNames) %>%
+  as.data.frame() %>%
+  split(f = fitUgc$unit) %>%
+  parallel::mclapply(as.matrix, mc.cores = 3)
+fitLambda <- getIntensities(bgCelSet$lambda, indices = fitUgc$cell) %>%
+  set_colnames(celNames) %>%
+  log() %>%
+  as.data.frame() %>%
+  split(f = fitUgc$unit) %>%
+  parallel::mclapply(as.matrix, mc.cores = 3)
+fitDelta <- getIntensities(bgCelSet$delta, indices = fitUgc$cell) %>%
+  set_colnames(celNames) %>%
+  log() %>%
+  as.data.frame() %>%
+  split(f = fitUgc$unit) %>%
+  parallel::mclapply(as.matrix, mc.cores = 3)
+fitZ <- names(fitPM) %>%
+  parallel::mclapply(function(x){
+    zScore(fitPM[[x]], fitLambda[[x]], fitDelta[[x]], 
+           exons = droplevels(filter(fitUgc, unit ==x))$group)
+  }, mc.cores = 3) %>%
+  set_names(names(fitPM))
+exonZ <- fitZ %>%
+  lapply(function(x){x$exon}) %>%
+  unlist %>%
+  as.data.frame() %>%
+  set_names("Z") %>%
+  rownames_to_column("unitID") %>%
+  as_data_frame() %>%
+  mutate(groupID = gsub(".+\\.(ENSG[0-9_]+)", "\\1", unitID),
+         unitID = gsub("(ENSG[0-9]+)\\..+", "\\1", unitID)) %>%
+  dplyr::select(unitID, groupID, Z)
+```
+
+A suitable value for inclusion of an exon-level group may be $Z_j > 50$, and a 95% CPI which excludes the range $\pm \kappa$ for some real value $\kappa$, e.g. $\kappa = 0.2$
+
+```{r}
+phiLogFC %>%
+  separate(groupID, into = c("unitID", "groupID"), sep = "\\.") %>%
+  left_join(exonZ) %>%
+  arrange(desc(abs(B)))
+```
+
+## Fitting a Single Unit
+
+If wanting to fit only a single unit, this is also possible by simply running the command `fitBmeaSingle()`.
+This will fit on a single node, calling the underlying `C` code, but without writing the values to disk.
+
+```{r}
+unit <- 1
+myFit <- fitBmeaSingle(csN, bgCelSet, unit, conditions, contrastMatrix, 
+                       mcmcParam = mcmcParam)
+```
+
+To inspect the fold change at the gene level
+
+```{r}
+myFit$logFC %>% 
+  as.data.frame() %>%
+  rownames_to_column("Comparison") %>%
+  ggplot(aes(`50%`, 1)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = `2.5%`, xmax = `97.5%`)) +
+  geom_vline(xintercept = 0, colour = "blue", linetype = 2) +
+  labs(x = "95% CPI",
+       y = c()) +
+  facet_wrap(~Comparison) +
+  theme_bw() +
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank())
+```
+
+Similarly at the exon level
+
+```{r}
+myFit$phiLogFC$BVsA %>%
+  as.data.frame() %>%
+  rownames_to_column("groupID") %>%
+  dplyr::select(groupID, `2.5%`, median = `50%`, `97.5%`) %>%
+  left_join(exonZ) %>%
+  mutate(groupID = str_extract(groupID, "_[0-9]+"),
+         candidate = Z > 50) %>%
+  ggplot(aes(median, groupID, colour = candidate))+
+  geom_point() +
+  geom_errorbarh(aes(xmin = `2.5%`, xmax = `97.5%`)) +
+  geom_vline(xintercept = 0, colour = "red", linetype = 2) +
+  scale_colour_manual(values = c("grey50", "green")) +
+  labs(x = "95% CPI",
+       colour = "Z > 50") +
+  theme_bw()
+```
+
+
+# Session Info
+
+```{r sessionInfo, echo=FALSE, eval=TRUE}
+pander(sessionInfo())
+```
+
+# References

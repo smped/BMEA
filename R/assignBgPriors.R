@@ -212,7 +212,7 @@ assignBgPriors <- function(celSet, seqFile, bgBins=NULL, bgParam=NULL, method="M
     if (length(seqCol)!=1) stop(sprintf("Unable to locate the sequence data in %s\n",seqFile))
     seqData <- read.table(seqFile, header=TRUE, sep="\t", stringsAsFactors=FALSE)
     cdfCols <- nbrOfColumns(cdf)
-    seqCells <- xy2indices(as.integer(seqData[,xCol]), as.integer(seqData[,yCol]), nc=cdfCols)
+    seqCells <- affy::xy2indices(as.integer(seqData[,xCol]), as.integer(seqData[,yCol]), nc=cdfCols)
     seqData <- data.frame(seqCells, seqData[,seqCol], stringsAsFactors=FALSE)
     colnames(seqData) <- c("Probe ID","probe sequence")
     message("done\n")

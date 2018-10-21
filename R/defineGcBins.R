@@ -58,8 +58,8 @@ defineGcBins <- function(celSet, cdf=NULL, bgProbes="r2.genomic.bgp", nBins=20, 
     if(is.na(match("y",colnames(bgp)))) stop("Invalid bgProbes File: File must have a column named 'y'\n")
     if(is.na(match("gc_count",colnames(bgp)))) stop("Invalid bgProbes File: File must have a column named gc_count\n")
     nProbes <- nrow(bgp) # The number of probes in the bgp file
-    nr <- getDimension(cdf)[1] # The number of rows on the cdf
-    indices <- xy2indices(bgp$x, bgp$y, nr=nr) # Get the cell indices
+    nc <- getDimension(cdf)[2] # The number of rows on the cdf
+    indices <- affy::xy2indices(bgp$x, bgp$y, nc = nc) # Get the cell indices
 
     # Get the other required information
     nChips <- nbrOfArrays(celSet) # Get the number of arrays
